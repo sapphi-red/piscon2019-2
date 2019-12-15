@@ -21,6 +21,8 @@ import (
 	goji "goji.io"
 	"goji.io/pat"
 	"golang.org/x/crypto/bcrypt"
+
+	_ "net/http/pprof"
 )
 
 const (
@@ -318,6 +320,13 @@ func main() {
 		log.Fatalf("failed to connect to DB: %s.", err.Error())
 	}
 	defer dbx.Close()
+
+
+	if os.Getenv("pprof") == "true" {
+		go func() {
+			log.Println(http.ListenAndServe("localhost:6060", nil))
+		}()
+	}
 
 	mux := goji.NewMux()
 
