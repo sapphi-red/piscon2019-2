@@ -421,8 +421,13 @@ func getUserSimpleByID(q sqlx.Queryer, userID int64) (userSimple UserSimple, err
 }
 
 func getUserSimplesByID(q sqlx.Queryer, userIDs []int64) (userSimples map[int64]UserSimple, err error) {
+	query, args, err := sqlx.In("SELECT id, account_name, num_sell_items FROM `users` WHERE `id` IN (?)", userIDs)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	users := make([]UserSimple, 0, len(userIDs))
-	err = sqlx.Select(q, &users, "SELECT id, account_name, num_sell_items FROM `users` WHERE `id` IN (?)", intsToString(userIDs))
+	err = sqlx.Select(q, users, query, args...)
 	userSimples = map[int64]UserSimple{}
 	if err != nil {
 		return userSimples, err
