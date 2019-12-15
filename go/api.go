@@ -61,11 +61,20 @@ func APIPaymentToken(paymentURL string, param *APIPaymentServiceTokenReq) (*APIP
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Content-Type", "application/json")
 
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
+	var res *http.Response
+	tried := 0
+	for {
+		res, err = http.DefaultClient.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer res.Body.Close()
+
+		if res.StatusCode == http.StatusOK || 15 < tried {
+			break
+		}
+		tried++
 	}
-	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
 		b, err := ioutil.ReadAll(res.Body)
