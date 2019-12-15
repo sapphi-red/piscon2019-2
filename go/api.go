@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 const (
@@ -74,6 +75,7 @@ func APIPaymentToken(paymentURL string, param *APIPaymentServiceTokenReq) (*APIP
 			break
 		}
 		tried++
+		time.Sleep(time.Millisecond * 10)
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -153,6 +155,7 @@ func APIShipmentRequest(shipmentURL string, param *APIShipmentRequestReq) ([]byt
 			break
 		}
 		tried++
+		time.Sleep(time.Millisecond * 10)
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -191,6 +194,7 @@ func APIShipmentStatus(shipmentURL string, param *APIShipmentStatusReq) (*APIShi
 			break
 		}
 		tried++
+		time.Sleep(time.Millisecond * 10)
 	}
 
 	if res.StatusCode != http.StatusOK {
