@@ -161,6 +161,7 @@ func APIShipmentStatus(shipmentURL string, param *APIShipmentStatusReq) (*APIShi
 	req.Header.Set("Authorization", IsucariAPIToken)
 
 	var res *http.Response
+	tried := 0
 	for {
 		res, err = http.DefaultClient.Do(req)
 		if err != nil {
@@ -168,15 +169,18 @@ func APIShipmentStatus(shipmentURL string, param *APIShipmentStatusReq) (*APIShi
 		}
 		defer res.Body.Close()
 
-		if res.StatusCode == http.StatusOK {
+		if res.StatusCode == http.StatusOK || 15 < tried {
 			break
-		} else {
-			b, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read res.Body and the status code of the response from shipment service was not 200: %v", err)
-			}
-			return nil, fmt.Errorf("status code: %d; body: %s", res.StatusCode, b)
 		}
+		tried++
+	}
+
+	if res.StatusCode != http.StatusOK {
+		b, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read res.Body and the status code of the response from shipment service was not 200: %v", err)
+		}
+		return nil, fmt.Errorf("status code: %d; body: %s", res.StatusCode, b)
 	}
 
 	ssr := &APIShipmentStatusRes{}
