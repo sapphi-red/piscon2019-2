@@ -435,7 +435,6 @@ func getUserSimplesByID(q sqlx.Queryer, userIDs []int64) (userSimples map[int64]
 	for _, user := range users {
 		userSimples[user.ID] = user
 	}
-	log.Println("sss", users, userSimples, intsToString(userIDs))
 	return userSimples, err
 }
 
@@ -620,7 +619,6 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 	for _, item := range items {
 		seller, ok := sellers[item.SellerID]
 		if !ok {
-			log.Print("seller: ", sellers, seller, item.SellerID, sellerIDs)
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
