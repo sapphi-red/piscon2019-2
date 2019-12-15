@@ -615,7 +615,7 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 	for _, item := range items {
 		seller, ok := sellers[item.SellerID]
 		if !ok {
-			log.Print("seller: ", sellers, seller)
+			log.Print("seller: ", sellers, seller, item.SellerID)
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
