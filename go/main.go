@@ -2216,6 +2216,27 @@ func postLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// パスワード再生成
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), BcryptCost)
+	if err != nil {
+		log.Print(err)
+
+		outputErrorMsg(w, http.StatusInternalServerError, "error")
+		return
+	}
+
+	_, err = dbx.Exec("UPDATE `users` SET `hashed_password`=? WHERE `account_name`=?",
+		hashedPassword,
+		accountName,
+	)
+	if err != nil {
+		log.Print(err)
+
+		outputErrorMsg(w, http.StatusInternalServerError, "db error")
+		return
+	}
+	// ここまで
+
 	session := getSession(r)
 
 	session.Values["user_id"] = u.ID
