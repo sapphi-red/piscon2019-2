@@ -606,6 +606,7 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 
 	sellers, err := getUserSimplesByID(dbx, sellerIDs)
 	if err != nil {
+		log.Print("sellers: ", err, sellers)
 		outputErrorMsg(w, http.StatusNotFound, "seller not found")
 		return
 	}
@@ -614,6 +615,7 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 	for _, item := range items {
 		seller, ok := sellers[item.SellerID]
 		if !ok {
+			log.Print("seller: ", sellers, seller)
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
