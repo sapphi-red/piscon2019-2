@@ -516,9 +516,11 @@ func postInitialize(w http.ResponseWriter, r *http.Request) {
 		categoryMap[c.ID] = c
 	}
 
+	campaign, _ := strconv.Atoi(os.Getenv("campaign"))
+
 	res := resInitialize{
 		// キャンペーン実施時には還元率の設定を返す。詳しくはマニュアルを参照のこと。
-		Campaign: 3,
+		Campaign: campaign,
 		// 実装言語を返す
 		Language: "Go",
 	}
