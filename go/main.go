@@ -321,7 +321,6 @@ func main() {
 	}
 	defer dbx.Close()
 
-
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
@@ -500,7 +499,7 @@ func postInitialize(w http.ResponseWriter, r *http.Request) {
 
 	res := resInitialize{
 		// キャンペーン実施時には還元率の設定を返す。詳しくはマニュアルを参照のこと。
-		Campaign: 0,
+		Campaign: 1,
 		// 実装言語を返す
 		Language: "Go",
 	}
