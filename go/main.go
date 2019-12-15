@@ -511,6 +511,7 @@ func postInitialize(w http.ResponseWriter, r *http.Request) {
 		outputErrorMsg(w, http.StatusInternalServerError, "db error")
 		return
 	}
+	categoryMap = *new(map[int]Category)
 	for _, c := range categories {
 		categoryMap[c.ID] = c
 	}
