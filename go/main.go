@@ -324,7 +324,7 @@ func main() {
 	}
 	defer dbx.Close()
 
-	if os.Getenv("PPROF") == "true" {
+	if os.Getenv("pprof") == "true" {
 		go func() {
 			log.Println(http.ListenAndServe("localhost:6060", nil))
 		}()
