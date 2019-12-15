@@ -599,14 +599,14 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	sellerIDs := make([]int64, 0, len(items))
-	for _, item := range items {
-		sellerIDs = append(sellerIDs, item.SellerID)
+	sellerIDs := make([]int64, len(items))
+	for i, item := range items {
+		sellerIDs[i] = item.SellerID
 	}
 
 	sellers, err := getUserSimplesByID(dbx, sellerIDs)
 	if err != nil {
-		log.Print("sellers: ", err, sellers)
+		log.Print("sellers: ", err, sellers, sellerIDs)
 		outputErrorMsg(w, http.StatusNotFound, "seller not found")
 		return
 	}
@@ -615,7 +615,7 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 	for _, item := range items {
 		seller, ok := sellers[item.SellerID]
 		if !ok {
-			log.Print("seller: ", sellers, seller, item.SellerID)
+			log.Print("seller: ", sellers, seller, item.SellerID, sellerIDs)
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
