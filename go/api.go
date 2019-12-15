@@ -162,7 +162,7 @@ func APIShipmentStatus(shipmentURL string, param *APIShipmentStatusReq) (*APIShi
 
 	var res *http.Response
 	for {
-		res, err := http.DefaultClient.Do(req)
+		res, err = http.DefaultClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
