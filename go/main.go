@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/sessions"
@@ -406,16 +407,29 @@ func getUser(r *http.Request) (user User, errCode int, errMsg string) {
 	return user, http.StatusOK, ""
 }
 
+func intsToString(ints []int64) string {
+		b := make([]string, len(ints))
+    for i, v := range ints {
+        b[i] = strconv.FormatInt(v, 10)
+    }
+    return strings.Join(b, ",")
+}
+
 func getUserSimpleByID(q sqlx.Queryer, userID int64) (userSimple UserSimple, err error) {
-	user := User{}
-	err = sqlx.Get(q, &user, "SELECT * FROM `users` WHERE `id` = ?", userID)
-	if err != nil {
-		return userSimple, err
-	}
-	userSimple.ID = user.ID
-	userSimple.AccountName = user.AccountName
-	userSimple.NumSellItems = user.NumSellItems
+	err = sqlx.Get(q, &userSimple, "SELECT id, account_name, num_sell_items FROM `users` WHERE `id` = ?", userID)
 	return userSimple, err
+}
+
+func getUserSimplesByID(q sqlx.Queryer, userIDs []int64) (userSimples map[int64]UserSimple, err error) {
+	users := make([]UserSimple, 0, len(userIDs))
+	err = sqlx.Select(q, &users, "SELECT id, account_name, num_sell_items FROM `users` WHERE `id` IN (?)", intsToString(userIDs))
+	if err != nil {
+		return userSimples, err
+	}
+	for _, user := range users {
+		userSimples[user.ID] = user
+	}
+	return userSimples, err
 }
 
 func getCategoryByID(q sqlx.Queryer, categoryID int) (category Category, err error) {
@@ -584,10 +598,21 @@ func getNewItems(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	sellerIDs := make([]int64, 0, len(items))
+	for _, item := range items {
+		sellerIDs = append(sellerIDs, item.SellerID)
+	}
+
+	sellers, err := getUserSimplesByID(dbx, sellerIDs)
+	if err != nil {
+		outputErrorMsg(w, http.StatusNotFound, "seller not found")
+		return
+	}
+
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(dbx, item.SellerID)
-		if err != nil {
+		seller, ok := sellers[item.SellerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
@@ -712,10 +737,21 @@ func getNewCategoryItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sellerIDs := make([]int64, 0, len(items))
+	for _, item := range items {
+		sellerIDs = append(sellerIDs, item.SellerID)
+	}
+
+	sellers, err := getUserSimplesByID(dbx, sellerIDs)
+	if err != nil {
+		outputErrorMsg(w, http.StatusNotFound, "seller not found")
+		return
+	}
+
 	itemSimples := []ItemSimple{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(dbx, item.SellerID)
-		if err != nil {
+		seller, ok := sellers[item.SellerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
 			return
 		}
@@ -939,12 +975,22 @@ func getTransactions(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	sellerIDs := make([]int64, 0, len(items))
+	for _, item := range items {
+		sellerIDs = append(sellerIDs, item.SellerID)
+	}
+
+	sellers, err := getUserSimplesByID(dbx, sellerIDs)
+	if err != nil {
+		outputErrorMsg(w, http.StatusNotFound, "seller not found")
+		return
+	}
+
 	itemDetails := []ItemDetail{}
 	for _, item := range items {
-		seller, err := getUserSimpleByID(tx, item.SellerID)
-		if err != nil {
+		seller, ok := sellers[item.SellerID]
+		if !ok {
 			outputErrorMsg(w, http.StatusNotFound, "seller not found")
-			tx.Rollback()
 			return
 		}
 		category, err := getCategoryByID(tx, item.CategoryID)
