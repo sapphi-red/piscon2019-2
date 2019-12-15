@@ -321,9 +321,11 @@ func main() {
 	}
 	defer dbx.Close()
 
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
+	if os.Getenv("pprof") == "true" {
+		go func() {
+			log.Println(http.ListenAndServe("localhost:6060", nil))
+		}()
+	}
 
 	mux := goji.NewMux()
 
